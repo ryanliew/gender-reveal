@@ -31,7 +31,8 @@ class VoteController extends Controller
     {
         abort_if(PartyState::revealedGender() !== null, 403, 'The gender has already been revealed!');
 
-        $deviceUuid = $request->cookie('device_uuid') ?? (string) Str::uuid();
+        $cookie = $request->cookie('device_uuid');
+        $deviceUuid = is_string($cookie) && $cookie !== '' ? $cookie : (string) Str::uuid();
 
         $guest = Guest::query()->updateOrCreate(
             ['device_uuid' => $deviceUuid],
