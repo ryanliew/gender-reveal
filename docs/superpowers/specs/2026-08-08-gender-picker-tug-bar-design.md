@@ -12,7 +12,7 @@ Replace the two-button picker with a single sliding tug-of-war bar: a pill-shape
 
 ## Visual & Interaction Spec
 
-- **Track**: pill-shaped bar, `boy-soft` → `girl-soft` gradient background, roughly 56px tall (comfortable thumb target).
+- **Track**: pill-shaped bar, `boy-soft` → `girl-soft` gradient background, visually 16px tall (matches `Tv.vue`'s tug-of-war bar for visual consistency between phone and TV), wrapped in a ~48px invisible padded hit area for the tap/drag target (comfortable thumb target).
 - **Marker**: circular, ~48px, shows 🍼 while unselected, swaps to 💙 (boy) or 💖 (girl) once a side is picked.
 - **Idle state** (`form.gender === ''`): marker sits centered, dimmed/grayscale (`opacity` + `grayscale` filter or similar), track shows no fill wash, both labels render in a neutral (non-deep) tone.
 - **Labels**: "💙 Boy" and "💖 Girl" rendered as real `<button type="button">` elements below or flanking the track — these are the actual accessible controls (see Accessibility below), not purely decorative captions.
