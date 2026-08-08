@@ -1,6 +1,6 @@
 export interface AvatarPreset {
-    emoji: string
-    bg: string
+    emoji: string;
+    bg: string;
 }
 
 export const AVATARS: Record<string, AvatarPreset> = {
@@ -12,8 +12,8 @@ export const AVATARS: Record<string, AvatarPreset> = {
     chick: { emoji: '🐥', bg: '#FBF0CC' },
     koala: { emoji: '🐨', bg: '#E3E3E9' },
     frog: { emoji: '🐸', bg: '#DDEEDC' },
-}
+};
 
 export function avatarPreset(key: string): AvatarPreset {
-    return AVATARS[key] ?? { emoji: '👶', bg: '#EFE7E1' }
+    return AVATARS[key] ?? { emoji: '👶', bg: '#EFE7E1' };
 }
