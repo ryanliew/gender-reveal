@@ -10,6 +10,7 @@ const GIRL_PCT = 82;
 const track = ref<HTMLElement | null>(null);
 const dragging = ref(false);
 const dragPct = ref<number | null>(null);
+const activePointerId = ref<number | null>(null);
 
 const markerPct = computed(() => {
     if (dragging.value && dragPct.value !== null) {
@@ -61,63 +62,83 @@ function pctFromPointer(event: PointerEvent): number {
 }
 
 function onPointerDown(event: PointerEvent) {
+    if (activePointerId.value !== null) {
+        return;
+    }
+
+    activePointerId.value = event.pointerId;
     dragging.value = true;
     dragPct.value = pctFromPointer(event);
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
 }
 
 function onPointerMove(event: PointerEvent) {
-    if (!dragging.value) {
+    if (!dragging.value || event.pointerId !== activePointerId.value) {
         return;
     }
 
     dragPct.value = pctFromPointer(event);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function onPointerUp(event: PointerEvent) {
-    if (!dragging.value) {
+    if (!dragging.value || event.pointerId !== activePointerId.value) {
         return;
     }
 
-    const pct = dragPct.value ?? 50;
+    const pct = pctFromPointer(event);
     dragging.value = false;
     dragPct.value = null;
+    activePointerId.value = null;
     pick(pct < 50 ? 'boy' : 'girl');
+}
+
+function onPointerCancel(event: PointerEvent) {
+    if (event.pointerId !== activePointerId.value) {
+        return;
+    }
+
+    dragging.value = false;
+    dragPct.value = null;
+    activePointerId.value = null;
 }
 </script>
 
 <template>
     <div class="flex flex-col gap-3">
         <div
-            ref="track"
-            class="relative h-4 w-full touch-none rounded-full bg-white shadow-inner"
+            class="relative -my-4 cursor-grab touch-none py-4 select-none active:cursor-grabbing"
             aria-hidden="true"
             @pointerdown="onPointerDown"
             @pointermove="onPointerMove"
             @pointerup="onPointerUp"
-            @pointercancel="onPointerUp"
+            @pointercancel="onPointerCancel"
         >
             <div
-                class="absolute inset-y-0 left-0 rounded-l-full bg-boy"
-                :class="dragging ? '' : 'transition-all duration-500'"
-                :style="{ width: `${boyFillPct}%` }"
-            />
-            <div
-                class="absolute inset-y-0 right-0 rounded-r-full bg-girl"
-                :class="dragging ? '' : 'transition-all duration-500'"
-                :style="{ width: `${girlFillPct}%` }"
-            />
-            <span
-                class="absolute top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 cursor-grab items-center justify-center rounded-full bg-white text-2xl shadow-md active:cursor-grabbing"
-                :class="[
-                    dragging ? '' : 'transition-all duration-500',
-                    modelValue === '' ? 'opacity-50 grayscale' : '',
-                ]"
-                :style="{ left: `${markerPct}%` }"
+                ref="track"
+                class="relative h-4 w-full rounded-full bg-linear-to-r from-boy-soft to-girl-soft shadow-inner"
             >
-                {{ markerEmoji }}
-            </span>
+                <div
+                    class="absolute inset-y-0 left-0 rounded-l-full bg-boy"
+                    :class="dragging ? '' : 'transition-all duration-300'"
+                    :style="{ width: `${boyFillPct}%` }"
+                />
+                <div
+                    class="absolute inset-y-0 right-0 rounded-r-full bg-girl"
+                    :class="dragging ? '' : 'transition-all duration-300'"
+                    :style="{ width: `${girlFillPct}%` }"
+                />
+                <span
+                    :key="modelValue"
+                    class="pointer-events-none absolute top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-2xl shadow-md"
+                    :class="[
+                        dragging ? '' : 'animate-pop',
+                        modelValue === '' ? 'opacity-50 grayscale' : '',
+                    ]"
+                    :style="{ left: `${markerPct}%` }"
+                >
+                    {{ markerEmoji }}
+                </span>
+            </div>
         </div>
         <div class="flex items-center justify-between px-1">
             <button
