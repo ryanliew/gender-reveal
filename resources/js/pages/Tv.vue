@@ -4,7 +4,7 @@ import { useEchoPublic } from '@laravel/echo-vue';
 import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { avatarPreset } from '@/lib/avatars';
+import VoteChip from '@/components/VoteChip.vue';
 import type { Gender, GuestData } from '@/types/party';
 
 const props = defineProps<{
@@ -164,16 +164,6 @@ function chipPosition(guest: GuestData) {
         left: `${5 + seed2 * 55}%`,
     };
 }
-
-function chipFloatTiming(guest: GuestData) {
-    const seed = ((guest.id * 9301 + 49297) % 233280) / 233280;
-    const seed2 = ((guest.id * 233280 + 9301) % 49297) / 49297;
-
-    return {
-        animationDuration: `${6 + seed * 6}s`,
-        animationDelay: `${-seed2 * 6}s`,
-    };
-}
 </script>
 
 <template>
@@ -257,32 +247,10 @@ function chipFloatTiming(guest: GuestData) {
                         class="absolute z-10"
                         :style="chipPosition(guest)"
                     >
-                        <div
-                            class="flex items-center gap-3 rounded-full bg-white py-2 pr-5 pl-2 shadow-md"
-                            :class="
-                                revealed === 'boy'
-                                    ? 'animate-celebrate'
-                                    : 'animate-float-drift'
-                            "
-                            :style="
-                                revealed === 'boy'
-                                    ? undefined
-                                    : chipFloatTiming(guest)
-                            "
-                        >
-                            <span
-                                class="flex h-12 w-12 items-center justify-center rounded-full text-2xl"
-                                :style="{
-                                    backgroundColor: avatarPreset(guest.avatar)
-                                        .bg,
-                                }"
-                            >
-                                {{ avatarPreset(guest.avatar).emoji }}
-                            </span>
-                            <span class="text-xl font-medium">{{
-                                guest.name
-                            }}</span>
-                        </div>
+                        <VoteChip
+                            :guest="guest"
+                            :celebrating="revealed === 'boy'"
+                        />
                     </div>
                 </TransitionGroup>
             </section>
@@ -346,32 +314,10 @@ function chipFloatTiming(guest: GuestData) {
                         class="absolute z-10"
                         :style="chipPosition(guest)"
                     >
-                        <div
-                            class="flex items-center gap-3 rounded-full bg-white py-2 pr-5 pl-2 shadow-md"
-                            :class="
-                                revealed === 'girl'
-                                    ? 'animate-celebrate'
-                                    : 'animate-float-drift'
-                            "
-                            :style="
-                                revealed === 'girl'
-                                    ? undefined
-                                    : chipFloatTiming(guest)
-                            "
-                        >
-                            <span
-                                class="flex h-12 w-12 items-center justify-center rounded-full text-2xl"
-                                :style="{
-                                    backgroundColor: avatarPreset(guest.avatar)
-                                        .bg,
-                                }"
-                            >
-                                {{ avatarPreset(guest.avatar).emoji }}
-                            </span>
-                            <span class="text-xl font-medium">{{
-                                guest.name
-                            }}</span>
-                        </div>
+                        <VoteChip
+                            :guest="guest"
+                            :celebrating="revealed === 'girl'"
+                        />
                     </div>
                 </TransitionGroup>
             </section>
