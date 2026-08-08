@@ -74,6 +74,35 @@ const doodles = [
     },
 ];
 
+const FLAG_COLORS = ['#b8d4e8', '#f6c6d0', '#fbf0cc'];
+
+// Triangle flags hung along the garland's quadratic curve M0 10 Q 600 70 1200 10.
+const flags = Array.from({ length: 14 }, (_, i) => {
+    const t = (i + 0.5) / 14;
+
+    return {
+        x: 1200 * t,
+        y: 10 + 120 * t * (1 - t),
+        color: FLAG_COLORS[i % FLAG_COLORS.length],
+    };
+});
+
+const boyPct = computed(() => {
+    const total = boys.value.length + girls.value.length;
+
+    return total === 0 ? 50 : (boys.value.length / total) * 100;
+});
+
+function dotPattern(team: Gender) {
+    const color =
+        team === 'boy' ? 'rgba(91, 141, 184, 0.1)' : 'rgba(212, 112, 139, 0.1)';
+
+    return {
+        backgroundImage: `radial-gradient(circle, ${color} 7px, transparent 8px)`,
+        backgroundSize: '58px 58px',
+    };
+}
+
 let countdownTimer: ReturnType<typeof setInterval> | undefined;
 
 onMounted(async () => {
@@ -196,6 +225,28 @@ function chipPosition(guest: GuestData) {
             </span>
         </div>
 
+        <!-- Bunting garland -->
+        <svg
+            viewBox="0 0 1200 100"
+            preserveAspectRatio="none"
+            class="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 w-full"
+            aria-hidden="true"
+        >
+            <path
+                d="M0 10 Q 600 70 1200 10"
+                fill="none"
+                stroke="#4a3f3a"
+                stroke-opacity="0.25"
+                stroke-width="3"
+            />
+            <polygon
+                v-for="(flag, i) in flags"
+                :key="i"
+                :points="`${flag.x - 15},${flag.y} ${flag.x + 15},${flag.y} ${flag.x},${flag.y + 34}`"
+                :fill="flag.color"
+            />
+        </svg>
+
         <!-- Countdown -->
         <div
             v-if="countdown !== null"
@@ -232,9 +283,39 @@ function chipPosition(guest: GuestData) {
         <div class="grid grow grid-cols-[1fr_auto_1fr] gap-6">
             <!-- Team Boy -->
             <section
-                class="relative rounded-3xl transition-colors duration-1000"
+                class="relative overflow-hidden rounded-3xl transition-colors duration-1000"
                 :class="revealed === 'girl' ? 'bg-white/30' : 'bg-boy/40'"
             >
+                <div
+                    class="pointer-events-none absolute inset-0"
+                    :style="dotPattern('boy')"
+                    aria-hidden="true"
+                />
+                <div
+                    class="pointer-events-none absolute inset-3 rounded-[20px] border-2 border-dashed border-boy-deep/25"
+                    aria-hidden="true"
+                />
+                <span
+                    class="pointer-events-none absolute top-5 right-6 -rotate-12 text-4xl opacity-50"
+                    aria-hidden="true"
+                    >⛅</span
+                >
+                <span
+                    class="pointer-events-none absolute bottom-6 left-6 rotate-6 text-5xl opacity-50"
+                    aria-hidden="true"
+                    >🧸</span
+                >
+                <span
+                    class="pointer-events-none absolute right-8 bottom-8 -rotate-6 text-4xl opacity-50"
+                    aria-hidden="true"
+                    >🚂</span
+                >
+                <p
+                    v-if="boys.length === 0"
+                    class="absolute inset-0 flex items-center justify-center font-hand text-4xl text-boy-deep/40"
+                >
+                    no guesses yet…
+                </p>
                 <h2
                     class="absolute top-6 left-1/2 -translate-x-1/2 font-hand text-5xl font-semibold text-boy-deep"
                 >
@@ -255,53 +336,168 @@ function chipPosition(guest: GuestData) {
                 </TransitionGroup>
             </section>
 
-            <!-- Center: title + QR -->
+            <!-- Center: title + QR + scoreboard -->
             <section
-                class="flex w-80 flex-col items-center justify-center gap-6 text-center"
+                class="flex w-80 flex-col items-center justify-center gap-6 pt-6 text-center"
             >
                 <template v-if="!revealed">
-                    <p class="font-hand text-4xl text-girl-deep">
-                        he or she… what will it be?
-                    </p>
-                    <h1 class="text-4xl font-semibold tracking-tight">
-                        Gender Reveal
-                    </h1>
-                    <div
-                        class="flex animate-nudge flex-col items-center gap-3 rounded-3xl bg-white p-6 shadow-md"
-                    >
-                        <img
-                            v-if="qr"
-                            :src="qr"
-                            alt="QR code to join and vote"
-                            class="h-52 w-52"
-                        />
-                        <p class="text-lg font-medium">
-                            📱 Scan to cast your vote!
+                    <div>
+                        <p class="font-hand text-4xl text-girl-deep">
+                            he or she… what will it be?
                         </p>
+                        <h1 class="text-4xl font-semibold tracking-tight">
+                            Gender Reveal
+                        </h1>
                     </div>
-                    <p class="text-2xl font-medium opacity-70">
+
+                    <!-- Polaroid QR card held up by washi tape -->
+                    <div
+                        class="relative flex animate-nudge flex-col items-center gap-2 rounded-3xl bg-white p-5 pt-7 shadow-md"
+                    >
                         <span
-                            :key="`boys-${boys.length}`"
-                            class="inline-block animate-pop"
-                        >
-                            💙 {{ boys.length }}
-                        </span>
-                        ·
+                            class="absolute -top-3 left-8 h-7 w-24 -rotate-6 rounded-sm bg-boy/70"
+                            aria-hidden="true"
+                        />
                         <span
-                            :key="`girls-${girls.length}`"
-                            class="inline-block animate-pop"
+                            class="absolute -top-3 right-8 h-7 w-24 rotate-6 rounded-sm bg-girl/70"
+                            aria-hidden="true"
+                        />
+                        <div
+                            class="rounded-xl border-2 border-dashed border-blush p-2"
                         >
-                            {{ girls.length }} 💖
-                        </span>
-                    </p>
+                            <img
+                                v-if="qr"
+                                :src="qr"
+                                alt="QR code to join and vote"
+                                class="h-44 w-44"
+                            />
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <svg
+                                viewBox="0 0 40 48"
+                                class="h-10 w-8 text-ink/60"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M8 44 C 2 30, 26 34, 24 20 C 23 12, 12 14, 16 6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    stroke-linecap="round"
+                                />
+                                <path
+                                    d="M10 9 L16 4 L19 11"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                            <p
+                                class="font-hand text-3xl leading-none text-ink/80"
+                            >
+                                scan to join the fun!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Scoreboard -->
+                    <div class="flex w-full flex-col gap-3">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="flex-1 rounded-2xl border-2 border-boy bg-white/70 py-2 text-center"
+                            >
+                                <p
+                                    :key="`boys-${boys.length}`"
+                                    class="animate-pop text-4xl leading-none font-bold text-boy-deep"
+                                >
+                                    {{ boys.length }}
+                                </p>
+                                <p
+                                    class="font-hand text-2xl leading-tight text-boy-deep"
+                                >
+                                    Team Boy
+                                </p>
+                            </div>
+                            <span class="font-hand text-3xl text-ink/50"
+                                >vs</span
+                            >
+                            <div
+                                class="flex-1 rounded-2xl border-2 border-girl bg-white/70 py-2 text-center"
+                            >
+                                <p
+                                    :key="`girls-${girls.length}`"
+                                    class="animate-pop text-4xl leading-none font-bold text-girl-deep"
+                                >
+                                    {{ girls.length }}
+                                </p>
+                                <p
+                                    class="font-hand text-2xl leading-tight text-girl-deep"
+                                >
+                                    Team Girl
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Tug-of-war bar -->
+                        <div
+                            class="relative h-4 w-full rounded-full bg-white shadow-inner"
+                        >
+                            <div
+                                class="absolute inset-y-0 left-0 rounded-l-full bg-boy transition-all duration-700"
+                                :style="{ width: `${boyPct}%` }"
+                            />
+                            <div
+                                class="absolute inset-y-0 right-0 rounded-r-full bg-girl transition-all duration-700"
+                                :style="{ width: `${100 - boyPct}%` }"
+                            />
+                            <span
+                                class="absolute -top-3 -translate-x-1/2 text-2xl transition-all duration-700"
+                                :style="{ left: `${boyPct}%` }"
+                                aria-hidden="true"
+                            >
+                                🍼
+                            </span>
+                        </div>
+                    </div>
                 </template>
             </section>
 
             <!-- Team Girl -->
             <section
-                class="relative rounded-3xl transition-colors duration-1000"
+                class="relative overflow-hidden rounded-3xl transition-colors duration-1000"
                 :class="revealed === 'boy' ? 'bg-white/30' : 'bg-girl/40'"
             >
+                <div
+                    class="pointer-events-none absolute inset-0"
+                    :style="dotPattern('girl')"
+                    aria-hidden="true"
+                />
+                <div
+                    class="pointer-events-none absolute inset-3 rounded-[20px] border-2 border-dashed border-girl-deep/25"
+                    aria-hidden="true"
+                />
+                <span
+                    class="pointer-events-none absolute top-5 left-6 rotate-12 text-4xl opacity-50"
+                    aria-hidden="true"
+                    >🎀</span
+                >
+                <span
+                    class="pointer-events-none absolute right-6 bottom-6 -rotate-6 text-5xl opacity-50"
+                    aria-hidden="true"
+                    >🦋</span
+                >
+                <span
+                    class="pointer-events-none absolute bottom-8 left-8 rotate-6 text-4xl opacity-50"
+                    aria-hidden="true"
+                    >🌷</span
+                >
+                <p
+                    v-if="girls.length === 0"
+                    class="absolute inset-0 flex items-center justify-center font-hand text-4xl text-girl-deep/40"
+                >
+                    no guesses yet…
+                </p>
                 <h2
                     class="absolute top-6 left-1/2 -translate-x-1/2 font-hand text-5xl font-semibold text-girl-deep"
                 >
