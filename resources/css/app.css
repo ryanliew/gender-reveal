@@ -8,4 +8,36 @@
         Instrument Sans, ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+    --font-hand: Caveat, 'Segoe Script', cursive;
+}
+
+@theme {
+    /* Hand-drawn pastel palette (docs/inspirations/Hand drawn art) */
+    --color-cream: #fdf6f3;
+    --color-blush: #fbe9e7;
+    --color-boy: #b8d4e8;
+    --color-boy-soft: #e3eef7;
+    --color-boy-deep: #5b8db8;
+    --color-girl: #f6c6d0;
+    --color-girl-soft: #fbe7ec;
+    --color-girl-deep: #d4708b;
+    --color-ink: #4a3f3a;
+
+    --animate-float-drift: float-drift 8s ease-in-out infinite;
+
+    @keyframes float-drift {
+        0%,
+        100% {
+            transform: translate(0, 0) rotate(-2deg);
+        }
+        25% {
+            transform: translate(12px, -14px) rotate(2deg);
+        }
+        50% {
+            transform: translate(-8px, 10px) rotate(-1deg);
+        }
+        75% {
+            transform: translate(10px, 6px) rotate(3deg);
+        }
+    }
 }
