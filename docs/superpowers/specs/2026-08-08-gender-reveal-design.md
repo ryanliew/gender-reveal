@@ -104,6 +104,25 @@ soft pastels, hand-drawn animal motifs, script accent typography.
 - Pages: `/`, `/tv`, host page render the right Inertia components with the
   right props.
 
+## Animation pass (addendum, approved 2026-08-08)
+
+All implemented with CSS keyframes (Tailwind v4 `--animate-*` tokens), Vue
+`Transition`/`TransitionGroup`, and canvas-confetti. Looping/ambient motion is
+disabled under `prefers-reduced-motion` (the reveal countdown is skipped too).
+
+TV: chips spring-pop in on arrival; tally counters pop on change; low-opacity
+ambient doodles (🍃🎈💕⭐) drift down behind the panes; team headings sway
+gently; the QR card gives a periodic "scan me" tilt; reveal plays a dimmed
+3…2…1 script countdown (~0.9s per beat) before the confetti + announcement,
+the announcement zooms in with spring overshoot, and the winning team's chips
+switch to a celebratory bounce.
+
+Join: selected avatar wiggles; selected gender button pops; successful vote
+fires a small themed confetti burst and slides the confirmation banner in; the
+heading gets a self-drawing hand-drawn squiggle underline; a few ambient
+doodles float in the background; the reveal takeover fires a confetti burst on
+the phone as well.
+
 ## Out of scope (YAGNI)
 
 - Multiple events/rooms, photo uploads, vote tallies/percentages on TV,

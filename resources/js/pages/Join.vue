@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { useEchoPublic } from '@laravel/echo-vue';
-import { ref } from 'vue';
+import confetti from 'canvas-confetti';
+import { onMounted, ref } from 'vue';
 import { store } from '@/actions/App/Http/Controllers/VoteController';
 import { avatarPreset } from '@/lib/avatars';
 import type { Gender, GuestData } from '@/types/party';
@@ -15,8 +16,24 @@ const props = defineProps<{
 const revealed = ref<Gender | null>(props.revealedGender);
 const saved = ref(false);
 
+const doodles = [
+    { emoji: '🍃', left: '8%', duration: '20s', delay: '-4s' },
+    { emoji: '💕', left: '50%', duration: '26s', delay: '-14s' },
+    { emoji: '⭐', left: '86%', duration: '23s', delay: '-9s' },
+];
+
+onMounted(() => {
+    if (revealed.value) {
+        burst(revealed.value);
+    }
+});
+
 useEchoPublic<{ gender: Gender }>('party', 'GenderRevealed', (e) => {
-    revealed.value = e.gender;
+    // Hold back for the TV's 3…2…1 countdown so phones don't spoil the moment.
+    setTimeout(() => {
+        revealed.value = e.gender;
+        burst(e.gender);
+    }, 2700);
 });
 
 const form = useForm({
@@ -25,10 +42,26 @@ const form = useForm({
     gender: (props.guest?.gender ?? '') as Gender | '',
 });
 
+function burst(gender: Gender | '') {
+    confetti({
+        particleCount: 50,
+        spread: 75,
+        startVelocity: 35,
+        origin: { y: 0.75 },
+        colors:
+            gender === 'boy'
+                ? ['#5b8db8', '#b8d4e8', '#ffffff']
+                : ['#d4708b', '#f6c6d0', '#ffffff'],
+    });
+}
+
 function submit() {
     form.submit(store(), {
         preserveScroll: true,
-        onSuccess: () => (saved.value = true),
+        onSuccess: () => {
+            saved.value = true;
+            burst(form.gender);
+        },
     });
 }
 </script>
@@ -36,15 +69,34 @@ function submit() {
 <template>
     <Head title="Join the Party" />
     <div
-        class="flex min-h-screen flex-col items-center bg-cream px-5 py-10 text-ink"
+        class="relative flex min-h-screen flex-col items-center bg-cream px-5 py-10 text-ink"
     >
+        <!-- Ambient drifting doodles -->
+        <div
+            class="pointer-events-none absolute inset-0 overflow-hidden"
+            aria-hidden="true"
+        >
+            <span
+                v-for="(doodle, i) in doodles"
+                :key="i"
+                class="absolute animate-doodle-fall text-2xl opacity-30"
+                :style="{
+                    left: doodle.left,
+                    animationDuration: doodle.duration,
+                    animationDelay: doodle.delay,
+                }"
+            >
+                {{ doodle.emoji }}
+            </span>
+        </div>
+
         <!-- Revealed: celebrate instead of voting -->
         <div
             v-if="revealed"
             class="flex w-full max-w-md grow flex-col items-center justify-center gap-6 text-center"
         >
             <div
-                class="flex w-full flex-col items-center gap-4 rounded-3xl p-10 shadow-sm"
+                class="flex w-full animate-reveal-zoom flex-col items-center gap-4 rounded-3xl p-10 shadow-sm"
                 :class="revealed === 'boy' ? 'bg-boy-soft' : 'bg-girl-soft'"
             >
                 <span class="text-7xl">{{
@@ -77,15 +129,31 @@ function submit() {
                 <h1 class="text-3xl font-semibold tracking-tight">
                     Cast Your Guess
                 </h1>
+                <svg
+                    viewBox="0 0 200 12"
+                    class="mx-auto mt-1 h-3 w-48 text-girl-deep"
+                    aria-hidden="true"
+                >
+                    <path
+                        class="squiggle-path"
+                        d="M2 8 Q 20 2, 40 7 T 80 7 T 120 7 T 160 7 T 198 6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                    />
+                </svg>
             </header>
 
-            <div
-                v-if="saved"
-                class="rounded-2xl bg-white px-5 py-4 text-center text-sm shadow-sm"
-            >
-                🎉 Your vote is in, <strong>{{ form.name }}</strong> — you can
-                still change it until the big reveal!
-            </div>
+            <Transition enter-active-class="animate-slide-down">
+                <div
+                    v-if="saved"
+                    class="rounded-2xl bg-white px-5 py-4 text-center text-sm shadow-sm"
+                >
+                    🎉 Your vote is in, <strong>{{ form.name }}</strong> — you
+                    can still change it until the big reveal!
+                </div>
+            </Transition>
 
             <!-- Name -->
             <label class="flex flex-col gap-2">
@@ -114,7 +182,7 @@ function submit() {
                         :style="{ backgroundColor: avatarPreset(key).bg }"
                         :class="
                             form.avatar === key
-                                ? 'scale-105 ring-3 ring-ink/60'
+                                ? 'scale-105 animate-wiggle ring-3 ring-ink/60'
                                 : 'ring-1 ring-black/5'
                         "
                         :aria-pressed="form.avatar === key"
@@ -137,7 +205,7 @@ function submit() {
                         class="flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl bg-boy text-boy-deep transition-transform active:scale-95"
                         :class="
                             form.gender === 'boy'
-                                ? 'scale-105 ring-3 ring-boy-deep'
+                                ? 'scale-105 animate-pop ring-3 ring-boy-deep'
                                 : 'ring-1 ring-black/5'
                         "
                         :aria-pressed="form.gender === 'boy'"
@@ -151,7 +219,7 @@ function submit() {
                         class="flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl bg-girl text-girl-deep transition-transform active:scale-95"
                         :class="
                             form.gender === 'girl'
-                                ? 'scale-105 ring-3 ring-girl-deep'
+                                ? 'scale-105 animate-pop ring-3 ring-girl-deep'
                                 : 'ring-1 ring-black/5'
                         "
                         :aria-pressed="form.gender === 'girl'"
@@ -181,3 +249,17 @@ function submit() {
         </form>
     </div>
 </template>
+
+<style scoped>
+.squiggle-path {
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    animation: squiggle-draw 1.2s ease-out 0.4s forwards;
+}
+
+@keyframes squiggle-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+</style>

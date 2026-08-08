@@ -24,6 +24,17 @@
     --color-ink: #4a3f3a;
 
     --animate-float-drift: float-drift 8s ease-in-out infinite;
+    --animate-sway: sway 5s ease-in-out infinite;
+    --animate-doodle-fall: doodle-fall 16s linear infinite;
+    --animate-nudge: nudge 6s ease-in-out infinite;
+    --animate-celebrate: celebrate 0.9s ease-in-out infinite;
+    --animate-pop: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --animate-wiggle: wiggle 0.5s ease-in-out;
+    --animate-chip-pop: chip-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    --animate-count-pop: count-pop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    --animate-reveal-zoom: reveal-zoom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)
+        both;
+    --animate-slide-down: slide-down 0.4s ease-out both;
 
     @keyframes float-drift {
         0%,
@@ -39,5 +50,160 @@
         75% {
             transform: translate(10px, 6px) rotate(3deg);
         }
+    }
+
+    @keyframes sway {
+        0%,
+        100% {
+            transform: rotate(-2deg);
+        }
+        50% {
+            transform: rotate(2.5deg);
+        }
+    }
+
+    @keyframes doodle-fall {
+        0% {
+            transform: translate(0, -10vh) rotate(0deg);
+        }
+        25% {
+            transform: translate(24px, 20vh) rotate(80deg);
+        }
+        50% {
+            transform: translate(-16px, 50vh) rotate(160deg);
+        }
+        75% {
+            transform: translate(20px, 80vh) rotate(240deg);
+        }
+        100% {
+            transform: translate(0, 110vh) rotate(320deg);
+        }
+    }
+
+    /* Mostly still, with a "scan me" tilt in the middle of each cycle */
+    @keyframes nudge {
+        0%,
+        42%,
+        58%,
+        100% {
+            transform: rotate(0deg);
+        }
+        46% {
+            transform: rotate(-3deg);
+        }
+        50% {
+            transform: rotate(3deg);
+        }
+        54% {
+            transform: rotate(-2deg);
+        }
+    }
+
+    @keyframes celebrate {
+        0%,
+        100% {
+            transform: translateY(0) scale(1);
+        }
+        50% {
+            transform: translateY(-14px) scale(1.08);
+        }
+    }
+
+    @keyframes pop {
+        0% {
+            transform: scale(0.8);
+        }
+        40% {
+            transform: scale(1.25);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @keyframes wiggle {
+        0%,
+        100% {
+            transform: rotate(0deg);
+        }
+        20% {
+            transform: rotate(-8deg);
+        }
+        40% {
+            transform: rotate(8deg);
+        }
+        60% {
+            transform: rotate(-5deg);
+        }
+        80% {
+            transform: rotate(5deg);
+        }
+    }
+
+    @keyframes chip-pop {
+        0% {
+            transform: scale(0) rotate(-12deg);
+        }
+        60% {
+            transform: scale(1.15) rotate(4deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
+    @keyframes count-pop {
+        0% {
+            transform: scale(0.3);
+            opacity: 0;
+        }
+        30% {
+            transform: scale(1.15);
+            opacity: 1;
+        }
+        70% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(1.6);
+            opacity: 0;
+        }
+    }
+
+    @keyframes reveal-zoom {
+        0% {
+            transform: scale(0.4);
+            opacity: 0;
+        }
+        70% {
+            transform: scale(1.06);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slide-down {
+        0% {
+            transform: translateY(-12px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
