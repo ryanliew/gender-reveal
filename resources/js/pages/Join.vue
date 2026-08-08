@@ -4,6 +4,7 @@ import { useEchoPublic } from '@laravel/echo-vue';
 import confetti from 'canvas-confetti';
 import { computed, onMounted, ref } from 'vue';
 import { store } from '@/actions/App/Http/Controllers/VoteController';
+import GenderPicker from '@/components/GenderPicker.vue';
 import { avatarPreset } from '@/lib/avatars';
 import type { Gender, GuestData } from '@/types/party';
 
@@ -370,42 +371,7 @@ function submit() {
             <!-- Gender -->
             <div class="flex flex-col gap-2">
                 <span class="font-medium">Your guess</span>
-                <div class="relative grid grid-cols-2 gap-3">
-                    <span
-                        class="pointer-events-none absolute top-1/2 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white pt-1 font-hand text-xl leading-none text-ink/60 shadow-md"
-                        aria-hidden="true"
-                    >
-                        vs
-                    </span>
-                    <button
-                        type="button"
-                        class="flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl bg-boy text-boy-deep transition-transform active:scale-95"
-                        :class="
-                            form.gender === 'boy'
-                                ? 'scale-105 animate-pop ring-3 ring-boy-deep'
-                                : 'ring-1 ring-black/5'
-                        "
-                        :aria-pressed="form.gender === 'boy'"
-                        @click="form.gender = 'boy'"
-                    >
-                        <span class="text-3xl">💙</span>
-                        <span class="text-xl font-semibold">Boy</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl bg-girl text-girl-deep transition-transform active:scale-95"
-                        :class="
-                            form.gender === 'girl'
-                                ? 'scale-105 animate-pop ring-3 ring-girl-deep'
-                                : 'ring-1 ring-black/5'
-                        "
-                        :aria-pressed="form.gender === 'girl'"
-                        @click="form.gender = 'girl'"
-                    >
-                        <span class="text-3xl">💖</span>
-                        <span class="text-xl font-semibold">Girl</span>
-                    </button>
-                </div>
+                <GenderPicker v-model="form.gender" />
                 <span v-if="form.errors.gender" class="text-sm text-girl-deep">
                     Boy or girl — take a guess!
                 </span>
