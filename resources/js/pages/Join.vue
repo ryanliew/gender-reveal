@@ -22,6 +22,25 @@ const doodles = [
     { emoji: '⭐', left: '86%', duration: '23s', delay: '-9s' },
 ];
 
+const FLAG_COLORS = ['#b8d4e8', '#f6c6d0', '#fbf0cc'];
+
+// Triangle flags hung along the garland's quadratic curve M0 10 Q 300 70 600 10.
+const flags = Array.from({ length: 7 }, (_, i) => {
+    const t = (i + 0.5) / 7;
+
+    return {
+        x: 600 * t,
+        y: 10 + 120 * t * (1 - t),
+        color: FLAG_COLORS[i % FLAG_COLORS.length],
+    };
+});
+
+const dotPattern = {
+    backgroundImage:
+        'radial-gradient(circle, rgba(74, 63, 58, 0.05) 6px, transparent 7px)',
+    backgroundSize: '52px 52px',
+};
+
 onMounted(() => {
     if (revealed.value) {
         burst(revealed.value);
@@ -123,8 +142,31 @@ function submit() {
 <template>
     <Head title="Join the Party" />
     <div
-        class="relative flex min-h-screen flex-col items-center bg-cream px-5 py-10 text-ink"
+        class="relative flex min-h-screen flex-col items-center bg-cream px-5 pt-14 pb-10 text-ink"
+        :style="dotPattern"
     >
+        <!-- Bunting garland -->
+        <svg
+            viewBox="0 0 600 100"
+            preserveAspectRatio="none"
+            class="pointer-events-none absolute inset-x-0 top-0 z-10 h-14 w-full"
+            aria-hidden="true"
+        >
+            <path
+                d="M0 10 Q 300 70 600 10"
+                fill="none"
+                stroke="#4a3f3a"
+                stroke-opacity="0.25"
+                stroke-width="3"
+            />
+            <polygon
+                v-for="(flag, i) in flags"
+                :key="i"
+                :points="`${flag.x - 15},${flag.y} ${flag.x + 15},${flag.y} ${flag.x},${flag.y + 34}`"
+                :fill="flag.color"
+            />
+        </svg>
+
         <!-- Ambient drifting doodles -->
         <div
             class="pointer-events-none absolute inset-0 overflow-hidden"
@@ -150,9 +192,17 @@ function submit() {
             class="flex w-full max-w-md grow flex-col items-center justify-center gap-6 text-center"
         >
             <div
-                class="flex w-full animate-reveal-zoom flex-col items-center gap-4 rounded-3xl p-10 shadow-sm"
+                class="relative flex w-full animate-reveal-zoom flex-col items-center gap-4 rounded-3xl p-10 shadow-sm"
                 :class="revealed === 'boy' ? 'bg-boy-soft' : 'bg-girl-soft'"
             >
+                <span
+                    class="absolute -top-3 left-8 h-7 w-20 -rotate-6 rounded-sm bg-boy/70"
+                    aria-hidden="true"
+                />
+                <span
+                    class="absolute -top-3 right-8 h-7 w-20 rotate-6 rounded-sm bg-girl/70"
+                    aria-hidden="true"
+                />
                 <span class="text-7xl">{{
                     revealed === 'boy' ? '👶💙' : '👶💖'
                 }}</span>
@@ -173,9 +223,33 @@ function submit() {
         <!-- Voting form -->
         <form
             v-else
-            class="flex w-full max-w-md flex-col gap-8"
+            class="relative flex w-full max-w-md flex-col gap-8 rounded-3xl bg-white/80 p-6 pt-8 shadow-md"
             @submit.prevent="submit"
         >
+            <!-- Washi tape + stitched border + corner motifs -->
+            <span
+                class="absolute -top-3 left-8 z-10 h-7 w-20 -rotate-6 rounded-sm bg-boy/70"
+                aria-hidden="true"
+            />
+            <span
+                class="absolute -top-3 right-8 z-10 h-7 w-20 rotate-6 rounded-sm bg-girl/70"
+                aria-hidden="true"
+            />
+            <div
+                class="pointer-events-none absolute inset-2 rounded-[20px] border-2 border-dashed border-blush"
+                aria-hidden="true"
+            />
+            <span
+                class="pointer-events-none absolute top-6 left-4 rotate-12 text-2xl opacity-40"
+                aria-hidden="true"
+                >🧸</span
+            >
+            <span
+                class="pointer-events-none absolute right-4 bottom-6 -rotate-12 text-2xl opacity-40"
+                aria-hidden="true"
+                >🎀</span
+            >
+
             <header class="text-center">
                 <p class="font-hand text-3xl text-girl-deep">
                     welcome to the party!
@@ -292,7 +366,13 @@ function submit() {
             <!-- Gender -->
             <div class="flex flex-col gap-2">
                 <span class="font-medium">Your guess</span>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="relative grid grid-cols-2 gap-3">
+                    <span
+                        class="pointer-events-none absolute top-1/2 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white pt-1 font-hand text-xl leading-none text-ink/60 shadow-md"
+                        aria-hidden="true"
+                    >
+                        vs
+                    </span>
                     <button
                         type="button"
                         class="flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl bg-boy text-boy-deep transition-transform active:scale-95"
