@@ -78,26 +78,13 @@ const floatTiming = {
                     :clip-path="`url(#cookie-${guest.id})`"
                 />
             </svg>
-            <!-- Preset avatars: emoji on a slowly spinning cookie -->
-            <template v-else>
-                <svg
-                    viewBox="0 0 80 80"
-                    class="absolute inset-0 h-full w-full animate-spin"
-                    :style="{
-                        animationDuration: '36s',
-                        animationDirection:
-                            guest.id % 2 === 0 ? 'normal' : 'reverse',
-                    }"
-                    aria-hidden="true"
-                >
-                    <path :d="cookie" :fill="avatarPreset(guest.avatar).bg" />
-                </svg>
-                <span
-                    class="absolute inset-0 flex items-center justify-center text-3xl"
-                >
-                    {{ avatarPreset(guest.avatar).emoji }}
-                </span>
-            </template>
+            <!-- Preset avatars: hand-drawn animal art, already circular -->
+            <img
+                v-else
+                :src="avatarPreset(guest.avatar).src"
+                :alt="avatarPreset(guest.avatar).label"
+                class="absolute inset-0 h-full w-full rounded-full object-cover"
+            />
         </span>
         <span class="pt-1 font-hand text-3xl leading-none font-semibold">
             {{ guest.name }}

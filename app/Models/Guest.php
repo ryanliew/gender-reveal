@@ -22,8 +22,9 @@ class Guest extends Model
     use HasFactory;
 
     public const array AVATARS = [
-        'fox', 'bear', 'owl', 'deer', 'bunny', 'chick', 'koala', 'frog',
-        'lion', 'panda', 'pig', 'unicorn', 'tiger', 'octopus', 'duck', 'turtle',
+        'lion', 'tiger', 'elephant', 'light-bear', 'dark-bear', 'fox-front',
+        'panda', 'fox-side', 'owl', 'dog', 'giraffe', 'zebra', 'cat',
+        'monkey', 'wolf', 'rabbit', 'penguin', 'koala',
     ];
 
     protected $fillable = ['device_uuid', 'name', 'avatar', 'photo_path', 'gender'];

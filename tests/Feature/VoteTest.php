@@ -21,7 +21,7 @@ test('join page renders with no vote', function () {
 test('posting a vote creates a guest and broadcasts', function () {
     Event::fake([VoteUpdated::class]);
 
-    $this->post('/vote', ['name' => 'Aunty May', 'avatar' => 'fox', 'gender' => 'girl'])
+    $this->post('/vote', ['name' => 'Aunty May', 'avatar' => 'fox-front', 'gender' => 'girl'])
         ->assertRedirect()
         ->assertCookie('device_uuid');
 
@@ -37,7 +37,7 @@ test('same device updates its vote instead of duplicating', function () {
     Guest::factory()->create(['device_uuid' => $uuid, 'gender' => 'boy']);
 
     $this->withUnencryptedCookie('device_uuid', $uuid)
-        ->post('/vote', ['name' => 'Uncle Tan', 'avatar' => 'bear', 'gender' => 'girl'])
+        ->post('/vote', ['name' => 'Uncle Tan', 'avatar' => 'light-bear', 'gender' => 'girl'])
         ->assertRedirect();
 
     expect(Guest::count())->toBe(1)
@@ -78,11 +78,11 @@ test('replacing a photo with a preset deletes the old file', function () {
     $guest = Guest::factory()->create(['avatar' => null, 'photo_path' => $path]);
 
     $this->withUnencryptedCookie('device_uuid', $guest->device_uuid)
-        ->post('/vote', ['name' => 'Back To Fox', 'avatar' => 'fox', 'gender' => 'girl'])
+        ->post('/vote', ['name' => 'Back To Fox', 'avatar' => 'fox-front', 'gender' => 'girl'])
         ->assertRedirect();
 
     Storage::disk('public')->assertMissing($path);
-    expect($guest->refresh()->avatar)->toBe('fox')
+    expect($guest->refresh()->avatar)->toBe('fox-front')
         ->and($guest->photo_path)->toBeNull();
 });
 
@@ -114,9 +114,9 @@ test('invalid payloads are rejected', function (array $payload) {
 
     expect(Guest::count())->toBe(0);
 })->with([
-    'missing name' => [['avatar' => 'fox', 'gender' => 'boy']],
+    'missing name' => [['avatar' => 'fox-front', 'gender' => 'boy']],
     'unknown avatar' => [['name' => 'A', 'avatar' => 'dragon', 'gender' => 'boy']],
-    'unknown gender' => [['name' => 'A', 'avatar' => 'fox', 'gender' => 'unsure']],
+    'unknown gender' => [['name' => 'A', 'avatar' => 'fox-front', 'gender' => 'unsure']],
 ]);
 
 test('voting after reveal is forbidden', function () {

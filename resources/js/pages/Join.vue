@@ -340,8 +340,7 @@ function submit() {
                         v-for="key in avatars"
                         :key="key"
                         type="button"
-                        class="flex aspect-square items-center justify-center rounded-2xl text-4xl transition-transform active:scale-95"
-                        :style="{ backgroundColor: avatarPreset(key).bg }"
+                        class="aspect-square overflow-hidden rounded-2xl bg-white transition-transform active:scale-95"
                         :class="
                             form.avatar === key
                                 ? 'scale-105 animate-wiggle ring-3 ring-ink/60'
@@ -350,7 +349,12 @@ function submit() {
                         :aria-pressed="form.avatar === key"
                         @click="pickPreset(key)"
                     >
-                        {{ avatarPreset(key).emoji }}
+                        <img
+                            :src="avatarPreset(key).src"
+                            :alt="avatarPreset(key).label"
+                            class="h-full w-full object-cover"
+                            loading="lazy"
+                        />
                     </button>
                 </div>
                 <span
