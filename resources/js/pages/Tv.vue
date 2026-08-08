@@ -372,28 +372,13 @@ function chipPosition(guest: GuestData) {
                                 class="h-44 w-44"
                             />
                         </div>
-                        <div class="flex items-center gap-1">
-                            <svg
-                                viewBox="0 0 40 48"
-                                class="h-10 w-8 text-ink/60"
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="-rotate-12 text-3xl"
                                 aria-hidden="true"
                             >
-                                <path
-                                    d="M8 44 C 2 30, 26 34, 24 20 C 23 12, 12 14, 16 6"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2.5"
-                                    stroke-linecap="round"
-                                />
-                                <path
-                                    d="M10 9 L16 4 L19 11"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                            </svg>
+                                📲
+                            </span>
                             <p
                                 class="font-hand text-3xl leading-none text-ink/80"
                             >
