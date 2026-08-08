@@ -2,7 +2,7 @@
 import { Head, useForm } from '@inertiajs/vue3';
 import { useEchoPublic } from '@laravel/echo-vue';
 import confetti from 'canvas-confetti';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { store } from '@/actions/App/Http/Controllers/VoteController';
 import { avatarPreset } from '@/lib/avatars';
 import type { Gender, GuestData } from '@/types/party';
@@ -39,8 +39,62 @@ useEchoPublic<{ gender: Gender }>('party', 'GenderRevealed', (e) => {
 const form = useForm({
     name: props.guest?.name ?? '',
     avatar: props.guest?.avatar ?? '',
+    photo: null as File | null,
     gender: (props.guest?.gender ?? '') as Gender | '',
 });
+
+const photoInput = ref<HTMLInputElement | null>(null);
+const photoPreview = ref<string | null>(props.guest?.photoUrl ?? null);
+
+const photoSelected = computed(
+    () =>
+        form.photo !== null ||
+        (form.avatar === '' && photoPreview.value !== null),
+);
+
+function pickPreset(key: string) {
+    form.avatar = key;
+    form.photo = null;
+}
+
+async function onPhotoPicked(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+
+    if (!file) {
+        return;
+    }
+
+    form.photo = await downscale(file);
+    form.avatar = '';
+    photoPreview.value = URL.createObjectURL(form.photo);
+}
+
+/**
+ * Shrink the photo to ≤512px JPEG on-device so uploads stay small.
+ * Falls back to the original file if the browser can't decode it.
+ */
+async function downscale(file: File): Promise<File> {
+    try {
+        const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas
+            .getContext('2d')
+            ?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+        const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, 'image/jpeg', 0.85),
+        );
+
+        return blob
+            ? new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+            : file;
+    } catch {
+        return file;
+    }
+}
 
 function burst(gender: Gender | '') {
     confetti({
@@ -172,8 +226,42 @@ function submit() {
 
             <!-- Avatar -->
             <div class="flex flex-col gap-2">
-                <span class="font-medium">Pick your character</span>
+                <span class="font-medium">
+                    Pick your character — or use your own photo
+                </span>
+                <input
+                    ref="photoInput"
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    @change="onPhotoPicked"
+                />
                 <div class="grid grid-cols-4 gap-3">
+                    <button
+                        type="button"
+                        class="flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-white transition-transform active:scale-95"
+                        :class="
+                            photoSelected
+                                ? 'scale-105 animate-wiggle ring-3 ring-ink/60'
+                                : 'ring-1 ring-black/5'
+                        "
+                        :aria-pressed="photoSelected"
+                        @click="photoInput?.click()"
+                    >
+                        <img
+                            v-if="photoPreview"
+                            :src="photoPreview"
+                            alt="Your photo"
+                            class="h-full w-full object-cover"
+                        />
+                        <span
+                            v-else
+                            class="flex flex-col items-center gap-1 text-ink/70"
+                        >
+                            <span class="text-3xl">📸</span>
+                            <span class="text-xs font-medium">Selfie</span>
+                        </span>
+                    </button>
                     <button
                         v-for="key in avatars"
                         :key="key"
@@ -186,13 +274,18 @@ function submit() {
                                 : 'ring-1 ring-black/5'
                         "
                         :aria-pressed="form.avatar === key"
-                        @click="form.avatar = key"
+                        @click="pickPreset(key)"
                     >
                         {{ avatarPreset(key).emoji }}
                     </button>
                 </div>
-                <span v-if="form.errors.avatar" class="text-sm text-girl-deep">
-                    Please pick a character.
+                <span
+                    v-if="form.errors.avatar || form.errors.photo"
+                    class="text-sm text-girl-deep"
+                >
+                    {{
+                        form.errors.photo || 'Pick a character or add a photo.'
+                    }}
                 </span>
             </div>
 
@@ -240,8 +333,8 @@ function submit() {
                 :disabled="
                     form.processing ||
                     !form.name ||
-                    !form.avatar ||
-                    !form.gender
+                    !form.gender ||
+                    (!form.avatar && !form.photo && !photoPreview)
                 "
             >
                 {{ guest ? 'Update my vote' : 'Join the party 🎈' }}

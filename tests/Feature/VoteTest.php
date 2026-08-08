@@ -4,7 +4,9 @@ use App\Enums\Gender;
 use App\Events\VoteUpdated;
 use App\Models\Guest;
 use App\PartyState;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 test('join page renders with no vote', function () {
@@ -49,6 +51,62 @@ test('join page shows existing vote for known device', function () {
     $this->withUnencryptedCookie('device_uuid', $guest->device_uuid)
         ->get('/')
         ->assertInertia(fn ($page) => $page->where('guest.id', $guest->id));
+});
+
+test('a photo can be uploaded as the avatar', function () {
+    Storage::fake('public');
+    Event::fake([VoteUpdated::class]);
+
+    $this->post('/vote', [
+        'name' => 'Selfie Sam',
+        'photo' => UploadedFile::fake()->image('me.jpg', 600, 800),
+        'gender' => 'boy',
+    ])->assertRedirect();
+
+    $guest = Guest::first();
+
+    expect($guest->avatar)->toBeNull()
+        ->and($guest->photo_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($guest->photo_path);
+    Event::assertDispatched(VoteUpdated::class);
+});
+
+test('replacing a photo with a preset deletes the old file', function () {
+    Storage::fake('public');
+    Event::fake([VoteUpdated::class]);
+    $path = UploadedFile::fake()->image('old.jpg')->store('avatars', 'public');
+    $guest = Guest::factory()->create(['avatar' => null, 'photo_path' => $path]);
+
+    $this->withUnencryptedCookie('device_uuid', $guest->device_uuid)
+        ->post('/vote', ['name' => 'Back To Fox', 'avatar' => 'fox', 'gender' => 'girl'])
+        ->assertRedirect();
+
+    Storage::disk('public')->assertMissing($path);
+    expect($guest->refresh()->avatar)->toBe('fox')
+        ->and($guest->photo_path)->toBeNull();
+});
+
+test('updating a vote without touching the avatar keeps the photo', function () {
+    Storage::fake('public');
+    Event::fake([VoteUpdated::class]);
+    $path = UploadedFile::fake()->image('keep.jpg')->store('avatars', 'public');
+    $guest = Guest::factory()->create(['avatar' => null, 'photo_path' => $path, 'gender' => 'boy']);
+
+    $this->withUnencryptedCookie('device_uuid', $guest->device_uuid)
+        ->post('/vote', ['name' => 'Changed Mind', 'gender' => 'girl'])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    Storage::disk('public')->assertExists($path);
+    expect($guest->refresh()->photo_path)->toBe($path)
+        ->and($guest->gender)->toBe(Gender::Girl);
+});
+
+test('a vote with neither preset nor photo is rejected', function () {
+    $this->post('/vote', ['name' => 'No Face', 'gender' => 'boy'])
+        ->assertSessionHasErrors('avatar');
+
+    expect(Guest::count())->toBe(0);
 });
 
 test('invalid payloads are rejected', function (array $payload) {

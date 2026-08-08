@@ -123,6 +123,24 @@ heading gets a self-drawing hand-drawn squiggle underline; a few ambient
 doodles float in the background; the reveal takeover fires a confetti burst on
 the phone as well.
 
+## Photo avatars (addendum, approved 2026-08-08)
+
+Supersedes the "preset avatars only" decision. Guests may either pick a preset
+(expanded from 8 to 16 animals) or upload a selfie/photo:
+
+- Client downscales the image to ≤512px JPEG before upload (canvas); server
+  validates `image`, max 5MB, and stores it on the `public` disk under
+  `avatars/`.
+- Schema: `guests.avatar` becomes nullable; new nullable `guests.photo_path`.
+  Exactly one source is active — uploading clears the preset and vice versa.
+- `publicPayload()` gains `photoUrl` (via `Storage::url`); `device_uuid` still
+  never leaves the server.
+- Updating a vote without touching the avatar keeps the existing photo;
+  replacing a photo (or switching back to a preset) deletes the old file;
+  host reset deletes all uploaded files.
+- TV chips render photos clipped inside the scalloped cookie (static — only
+  preset cookies spin).
+
 ## Out of scope (YAGNI)
 
 - Multiple events/rooms, photo uploads, vote tallies/percentages on TV,

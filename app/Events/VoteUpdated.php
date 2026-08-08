@@ -11,7 +11,7 @@ class VoteUpdated implements ShouldBroadcastNow
 {
     use Dispatchable;
 
-    /** @var array{id: int, name: string, avatar: string, gender: string} */
+    /** @var array{id: int, name: string, avatar: ?string, photoUrl: ?string, gender: string} */
     public array $guest;
 
     public function __construct(Guest $guest)

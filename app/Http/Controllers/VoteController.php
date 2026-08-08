@@ -8,6 +8,7 @@ use App\Models\Guest;
 use App\PartyState;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,9 +35,31 @@ class VoteController extends Controller
         $cookie = $request->cookie('device_uuid');
         $deviceUuid = is_string($cookie) && $cookie !== '' ? $cookie : (string) Str::uuid();
 
+        $existing = Guest::query()->where('device_uuid', $deviceUuid)->first();
+
+        $data = [
+            'name' => $request->validated('name'),
+            'gender' => $request->validated('gender'),
+        ];
+
+        if ($request->hasFile('photo')) {
+            $data['photo_path'] = $request->file('photo')->store('avatars', 'public');
+            $data['avatar'] = null;
+        } elseif ($request->filled('avatar')) {
+            $data['avatar'] = $request->validated('avatar');
+            $data['photo_path'] = null;
+        }
+        // Otherwise the guest keeps their previously uploaded photo.
+
+        if ($existing?->photo_path !== null
+            && array_key_exists('photo_path', $data)
+            && $data['photo_path'] !== $existing->photo_path) {
+            Storage::disk('public')->delete($existing->photo_path);
+        }
+
         $guest = Guest::query()->updateOrCreate(
             ['device_uuid' => $deviceUuid],
-            $request->validated(),
+            $data,
         );
 
         VoteUpdated::dispatch($guest);

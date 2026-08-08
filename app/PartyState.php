@@ -5,6 +5,7 @@ namespace App;
 use App\Enums\Gender;
 use App\Models\Guest;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class PartyState
 {
@@ -25,6 +26,11 @@ class PartyState
     public static function reset(): void
     {
         Cache::forget(self::REVEAL_KEY);
+
+        Storage::disk('public')->delete(
+            Guest::query()->whereNotNull('photo_path')->pluck('photo_path')->all(),
+        );
+
         Guest::query()->delete();
     }
 }

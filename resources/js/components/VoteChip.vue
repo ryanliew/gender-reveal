@@ -58,23 +58,46 @@ const floatTiming = {
         :style="celebrating ? undefined : floatTiming"
     >
         <span class="relative h-14 w-14">
+            <!-- Photo avatars: clipped into a static cookie -->
             <svg
+                v-if="guest.photoUrl"
                 viewBox="0 0 80 80"
-                class="absolute inset-0 h-full w-full animate-spin"
-                :style="{
-                    animationDuration: '36s',
-                    animationDirection:
-                        guest.id % 2 === 0 ? 'normal' : 'reverse',
-                }"
+                class="absolute inset-0 h-full w-full"
                 aria-hidden="true"
             >
-                <path :d="cookie" :fill="avatarPreset(guest.avatar).bg" />
+                <defs>
+                    <clipPath :id="`cookie-${guest.id}`">
+                        <path :d="cookie" />
+                    </clipPath>
+                </defs>
+                <image
+                    :href="guest.photoUrl"
+                    width="80"
+                    height="80"
+                    preserveAspectRatio="xMidYMid slice"
+                    :clip-path="`url(#cookie-${guest.id})`"
+                />
             </svg>
-            <span
-                class="absolute inset-0 flex items-center justify-center text-3xl"
-            >
-                {{ avatarPreset(guest.avatar).emoji }}
-            </span>
+            <!-- Preset avatars: emoji on a slowly spinning cookie -->
+            <template v-else>
+                <svg
+                    viewBox="0 0 80 80"
+                    class="absolute inset-0 h-full w-full animate-spin"
+                    :style="{
+                        animationDuration: '36s',
+                        animationDirection:
+                            guest.id % 2 === 0 ? 'normal' : 'reverse',
+                    }"
+                    aria-hidden="true"
+                >
+                    <path :d="cookie" :fill="avatarPreset(guest.avatar).bg" />
+                </svg>
+                <span
+                    class="absolute inset-0 flex items-center justify-center text-3xl"
+                >
+                    {{ avatarPreset(guest.avatar).emoji }}
+                </span>
+            </template>
         </span>
         <span class="pt-1 font-hand text-3xl leading-none font-semibold">
             {{ guest.name }}
